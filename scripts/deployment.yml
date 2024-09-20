@@ -1,1 +1,76 @@
 # Your Solution
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: book-catalog-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: book-catalog
+  template:
+    metadata:
+      labels:
+        app: book-catalog
+    spec:
+      containers:
+      - name: book-catalog
+        image: sit722part03.azurecr.io/book_catalog:1
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://inventory_knse_user:W6PKDpgHHJ9VUzHmkMqJuUEnc0mkqfge@dpg-crmf2iq3esus73fs09r0-a.oregon-postgres.render.com/inventory_knse"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: book-catalog-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: book-catalog
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-management-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inventory-management
+  template:
+    metadata:
+      labels:
+        app: inventory-management
+    spec:
+      containers:
+      - name: inventory-management
+        image: sit722part03.azurecr.io/inventory_management:1
+        ports:
+        - containerPort: 8001
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://inventory_knse_user:W6PKDpgHHJ9VUzHmkMqJuUEnc0mkqfge@dpg-crmf2iq3esus73fs09r0-a.oregon-postgres.render.com/inventory_knse"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-management-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: inventory-management
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8001
